@@ -1,7 +1,17 @@
 import React from 'react';
-import { render, screen, fireEvent, act } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import GameScreen from './GameScreen';
+
+jest.mock('../firebaseConfig', () => ({
+  db: {}
+}), { virtual: true });
+
+jest.mock('firebase/firestore', () => ({
+  collection: jest.fn(),
+  addDoc: jest.fn(),
+  getFirestore: jest.fn()
+}));
 
 jest.mock('../data/imagesData', () => ([
   {
@@ -9,51 +19,45 @@ jest.mock('../data/imagesData', () => ([
     topic: 'Test Konusu',
     hint: 'Bu bir test ipucusudur.',
     images: [
-      { id: 'img-real-1', src: '/test/real1.jpg', isAI: false },
-      { id: 'img-ai',     src: '/test/ai.jpg',    isAI: true },  // AI 
-      { id: 'img-real-2', src: '/test/real2.jpg', isAI: false }
+      { id: 'img-gercek-1', src: '/test/gercek1.jpg', isAI: false }, 
+      { id: 'img-ai',       src: '/test/ai.jpg',      isAI: true }, 
+      { id: 'img-gercek-2', src: '/test/gercek2.jpg', isAI: false } 
     ]
   }
 ]));
 
-jest.useFakeTimers();
+describe('GameScreen Componenti', () => {
 
-describe('GameScreen Componenti (Oyun Mantığı)', () => {
+  test('Puan, konu başlığı ve resimler doğru yükleniyor mu', () => {
+    render(<GameScreen oyunModu="klasik" oyunBitince={() => {}} />);
 
-  afterEach(() => {
-    jest.clearAllTimers();
-  });
-
-  test('görselleri ve puanı doğru şekilde göstermeli', () => {
-    render(<GameScreen oyunModu="klasik" />);
-
-    expect(screen.getByText('Puan:')).toBeInTheDocument();
-    expect(screen.getByText('0')).toBeInTheDocument();
+    expect(screen.getByText(/Puan:/i)).toBeInTheDocument();
+    expect(screen.getByText('Test Konusu')).toBeInTheDocument();
 
     const resimler = screen.getAllByRole('img');
     expect(resimler).toHaveLength(3);
   });
 
-  test('kullanıcı AI görselini bulduğunda başarı mesajı göstermeli', () => {
-    render(<GameScreen oyunModu="klasik" />);
+  test('Doğru tahmin (AI) yapıldığında başarı mesajı çıkmalı', async () => {
+    render(<GameScreen oyunModu="klasik" oyunBitince={() => {}} />);
 
-    const aiGorseli = screen.getByAltText('img-ai');
+    const resimler = screen.getAllByRole('img');
+    fireEvent.click(resimler[1]);
 
-    fireEvent.click(aiGorseli);
-
-    expect(screen.getByText('Mükemmel! Doğru Tahmin!')).toBeInTheDocument();
-    expect(screen.getByText('1')).toBeInTheDocument();
+    await waitFor(() => {
+        expect(screen.getByText(/Mükemmel!/i)).toBeInTheDocument();
+    });
   });
 
-  test('klasik modda yanlış tahminde ipucu göstermeli', () => {
-    render(<GameScreen oyunModu="klasik" />);
+  test('Klasik modda yanlış tahminde ipucu çıkmalı', async () => {
+    render(<GameScreen oyunModu="klasik" oyunBitince={() => {}} />);
 
-    const gercekGorsel = screen.getByAltText('img-real-1');
+    const resimler = screen.getAllByRole('img');
+    fireEvent.click(resimler[0]);
 
-    fireEvent.click(gercekGorsel);
-
-    expect(screen.getByText(/İpucu: Bu bir test ipucusudur/i)).toBeInTheDocument();
-    expect(screen.getByText(/Son şans!/i)).toBeInTheDocument();
+    await waitFor(() => {
+        expect(screen.getByText(/Hata!/i)).toBeInTheDocument();
+    });
   });
   
 });

@@ -3,26 +3,45 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import App from './App';
 
-describe('App Componenti (Ana Uygulama)', () => {
+jest.mock('./firebaseConfig', () => ({
+  db: {}
+}), { virtual: true });
+
+jest.mock('firebase/firestore', () => ({
+  collection: jest.fn(),
+  addDoc: jest.fn(),
+  getFirestore: jest.fn()
+}));
+
+jest.mock('./data/imagesData', () => ([
+  {
+    id: 99,
+    topic: 'Test Konusu',
+    hint: 'Test İpucu',
+    images: []
+  }
+]));
+
+describe('App Componenti', () => {
 
   test('varsayılan olarak Başlangıç Ekranını render etmeli', () => {
     render(<App />);
-    const baslikElementi = screen.getByText('Oyun Modu Seçin:');
+    
+    const baslikElementi = screen.getByText(/AI vs Gerçek/i);
     expect(baslikElementi).toBeInTheDocument();
-    const kategoriMetni = screen.queryByText(/Kategori:/i);
-    expect(kategoriMetni).not.toBeInTheDocument();
+    
+    const puanMetni = screen.queryByText(/Puan:/i);
+    expect(puanMetni).not.toBeInTheDocument();
   });
 
-  test('başlat butonuna tıklandığında Oyun Ekranına geçiş yapmalı', () => {
+  test('Mod butonuna tıklandığında Oyun Ekranına geçiş yapmalı', () => {
     render(<App />);
 
-   ByText(/Oyunu Başlat/i);
+    const modButonu = screen.getByRole('button', { name: /Klasik Mod/i });
+    fireEvent.click(modButonu);
     
-    fireEvent.click(baslatButonu);
-    const baslikElementi = screen.queryByText('Oyun Modu Seçin:');
-    expect(baslikElementi).not.toBeInTheDocument();
-    const kategoriMetni = screen.getByText(/Kategori:/i);
-    expect(kategoriMetni).toBeInTheDocument();
+    const puanMetni = screen.getByText(/Puan:/i);
+    expect(puanMetni).toBeInTheDocument();
   });
   
 });

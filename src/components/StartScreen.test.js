@@ -8,44 +8,31 @@ const OYUN_MODLARI = {
   SURELI: 'sureli_mod'
 };
 
-
 describe('StartScreen Componenti', () => {
 
   test('başlığı ve oyun modu seçeneklerini doğru render etmeli', () => {
-   
-    render(
-      <StartScreen 
-        oyunuBaslat={() => {}} 
-        oyunModlari={OYUN_MODLARI} 
-      />
-    );
+    render(<StartScreen oyunuBaslat={() => {}} />);
 
-    const baslikElementi = screen.getByText('AI Tahmin Oyunu');
+    const baslikElementi = screen.getByRole('heading', { level: 1 });
     expect(baslikElementi).toBeInTheDocument(); 
 
-    const klasikModLabel = screen.getByText(/Klasik Mod/i);
-    expect(klasikModLabel).toBeInTheDocument();
+    const klasikButon = screen.getByRole('button', { name: /Klasik Mod/i });
+    expect(klasikButon).toBeInTheDocument();
+    
+    const sureliButon = screen.getByRole('button', { name: /Süreli Mod/i });
+    expect(sureliButon).toBeInTheDocument();
   });
 
+  test('Klasik Mod butonuna tıklandığında prop fonksiyonunu çağırmalı', () => {
+    const mockOyunuBaslat = jest.fn(); 
 
- 
-  test('başlat butonuna tıklandığında prop fonksiyonunu çağırmalı', () => {
-    const mockOyunuBaslat = jest.fn();
-
-    render(
-      <StartScreen 
-        oyunuBaslat={mockOyunuBaslat} 
-        oyunModlari={OYUN_MODLARI} 
-      />
-    );
-
+    render(<StartScreen oyunuBaslat={mockOyunuBaslat} />);
     
-    const baslatButonu = screen.getByText(/Oyunu Başlat/i);
+    const klasikButon = screen.getByRole('button', { name: /Klasik Mod/i });
     
-    fireEvent.click(baslatButonu);
+    fireEvent.click(klasikButon);
 
     expect(mockOyunuBaslat).toHaveBeenCalledTimes(1);
-    
     expect(mockOyunuBaslat).toHaveBeenCalledWith(OYUN_MODLARI.KLASIK);
   });
   
