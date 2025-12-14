@@ -8,7 +8,6 @@ const OYUN_MODLARI = {
 };
 const SURE_LIMITI = 60;
 
-// Yardımcı Fonksiyon: Bir diziyi karıştırmak için (Shuffle)
 const diziyiKaristir = (array) => {
   return [...array].sort(() => Math.random() - 0.5);
 };
@@ -21,37 +20,30 @@ function GameScreen({ oyunModu, oyunBitince }) {
   const [puan, setPuan] = useState(0); 
   const [kalanSure, setKalanSure] = useState(SURE_LIMITI); 
 
-  // Simülasyon kayıt fonksiyonu
   const saveScore = (finalScore) => {
     console.log(`Skor Kaydedildi -> Puan: ${finalScore}`);
   };
 
-  // --- ÖNEMLİ: YENİ TUR SEÇME MANTIĞI BURADA DEĞİŞTİ ---
+  
   const yeniTurYukle = useCallback(() => {
-    // 1. Rastgele bir konu (kategori) seç (Örn: Doğa)
+    
     const rastgeleKonuIndex = Math.floor(Math.random() * imagesData.length);
     const secilenKategori = imagesData[rastgeleKonuIndex];
 
-    // 2. Bu kategorideki resimleri ayır: AI olanlar ve Gerçek olanlar
+   
     const yapayZekaResimleri = secilenKategori.images.filter(img => img.isAI);
     const gercekResimler = secilenKategori.images.filter(img => !img.isAI);
 
-    // 3. Oyun için seçim yap:
-    // Kural: Her turda kesinlikle 1 tane AI, 2 tane Gerçek resim olmalı.
     
-    // Rastgele 1 tane AI seç
     const oyunIcinAI = yapayZekaResimleri[Math.floor(Math.random() * yapayZekaResimleri.length)];
-
-    // Rastgele 2 tane Gerçek seç (Önce karıştır, sonra ilk 2'yi al)
     const oyunIcinGercekler = diziyiKaristir(gercekResimler).slice(0, 2);
 
-    // 4. Bu 3 resmi birleştir ve tekrar karıştır (ki AI hep aynı yerde durmasın)
+
     const finalResimListesi = diziyiKaristir([oyunIcinAI, ...oyunIcinGercekler]);
 
-    // 5. Yeni tur verisini oluştur
     const yeniTurVerisi = {
       ...secilenKategori,
-      images: finalResimListesi // 5-10 resim olsa bile buraya sadece seçilen 3'ü gelir
+      images: finalResimListesi 
     };
 
     setAktifTur(yeniTurVerisi);
@@ -64,7 +56,7 @@ function GameScreen({ oyunModu, oyunBitince }) {
     yeniTurYukle();
   }, [yeniTurYukle, oyunModu]);
 
-  // Süre Sayacı
+  // süre
   useEffect(() => {
     if (oyunModu === OYUN_MODLARI.SURELI) {
       if (kalanSure > 0 && turDurumu === 'tahmin_bekleniyor') {
