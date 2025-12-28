@@ -35,7 +35,7 @@ const imagesData = [
     
     {
       id: 3,
-      topic: "Modern Mimari",
+      topic: " Mimari",
       hint: "Perspektif çizgilerine bak. Pencereler veya sütunlar yamuk olabilir.",
       images: [
       
